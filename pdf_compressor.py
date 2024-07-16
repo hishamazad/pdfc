@@ -1,29 +1,7 @@
-#!/usr/bin/env python3
-# Author: Theeko74
-# Contributor(s): skjerns
-# Oct, 2021
-# MIT license -- free to use as you want, cheers.
-
-"""
-Simple python wrapper script to use ghoscript function to compress PDF files.
-
-Compression levels:
-    0: default - almost identical to /screen, 72 dpi images
-    1: prepress - high quality, color preserving, 300 dpi imgs
-    2: printer - high quality, 300 dpi images
-    3: ebook - low quality, 150 dpi images
-    4: screen - screen-view-only quality, 72 dpi images
-
-Dependency: Ghostscript.
-On MacOSX install via command line `brew install ghostscript`.
-"""
-
-import argparse
-import os.path
+import os
 import shutil
 import subprocess
 import sys
-
 
 def compress(input_file_path, output_file_path, power=0):
     """Function to compress PDF via Ghostscript command line interface"""
@@ -73,7 +51,6 @@ def compress(input_file_path, output_file_path, power=0):
     print("Final file size is {0:.5f}MB".format(final_size / 1000000))
     print("Done.")
 
-
 def get_ghostscript_path():
     gs_names = ["gs", "gswin32", "gswin64"]
     for name in gs_names:
@@ -83,40 +60,9 @@ def get_ghostscript_path():
         f"No GhostScript executable was found on path ({'/'.join(gs_names)})"
     )
 
+# Example usage within Jupyter notebook
+input_pdf = "input.pdf"  # Change this to your PDF file path
+output_pdf = "output.pdf"  # Change this to your desired output file path
+compression_level = 2  # Change this to your desired compression level (0 to 4)
 
-def main():
-    parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    parser.add_argument("input", help="Relative or absolute path of the input PDF file")
-    parser.add_argument("-o", "--out", help="Relative or absolute path of the output PDF file")
-    parser.add_argument("-c", "--compress", type=int, help="Compression level from 0 to 4")
-    parser.add_argument("-b", "--backup", action="store_true", help="Backup the old PDF file")
-    parser.add_argument("--open", action="store_true", default=False, help="Open PDF after compression")
-    args = parser.parse_args()
-
-    # In case no compression level is specified, default is 2 '/ printer'
-    if not args.compress:
-        args.compress = 2
-    # In case no output file is specified, store in temp file
-    if not args.out:
-        args.out = "temp.pdf"
-
-    # Run
-    compress(args.input, args.out, power=args.compress)
-
-    # In case no output file is specified, erase original file
-    if args.out == "temp.pdf":
-        if args.backup:
-            shutil.copyfile(args.input, args.input.replace(".pdf", "_BACKUP.pdf"))
-        shutil.copyfile(args.out, args.input)
-        os.remove(args.out)
-
-    # In case we want to open the file after compression
-    if args.open:
-        if args.out == "temp.pdf" and args.backup:
-            subprocess.call(["open", args.input])
-        else:
-            subprocess.call(["open", args.out])
-
-
-if __name__ == "__main__":
-    main()
+compress(input_pdf, output_pdf, power=compression_level)
